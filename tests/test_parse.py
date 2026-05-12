@@ -122,6 +122,39 @@ class TestRelativeDates:
     def test_last_year(self) -> None:
         assert parse("last year", date(2025, 6, 15)) == date(2024, 6, 15)
 
+    def test_days_ago(self) -> None:
+        assert parse("3 days ago", date(2025, 6, 15)) == date(2025, 6, 12)
+
+    def test_weeks_ago(self) -> None:
+        assert parse("2 weeks ago", date(2025, 6, 15)) == date(2025, 6, 1)
+
+    def test_months_ago(self) -> None:
+        assert parse("1 month ago", date(2025, 6, 15)) == date(2025, 5, 15)
+
+    def test_years_ago(self) -> None:
+        assert parse("1 year ago", date(2025, 6, 15)) == date(2024, 6, 15)
+
+    def test_a_day_ago(self) -> None:
+        assert parse("a day ago", date(2025, 6, 15)) == date(2025, 6, 14)
+
+    def test_days_earlier(self) -> None:
+        assert parse("3 days earlier", date(2025, 6, 15)) == date(2025, 6, 12)
+
+    def test_weeks_later(self) -> None:
+        assert parse("2 weeks later", date(2025, 6, 15)) == date(2025, 6, 29)
+
+    def test_a_day_earlier(self) -> None:
+        assert parse("a day earlier", date(2025, 6, 15)) == date(2025, 6, 14)
+
+    def test_a_month_later(self) -> None:
+        assert parse("a month later", date(2025, 6, 15)) == date(2025, 7, 15)
+
+    def test_days_back(self) -> None:
+        assert parse("3 days back", date(2025, 6, 15)) == date(2025, 6, 12)
+
+    def test_a_week_back(self) -> None:
+        assert parse("a week back", date(2025, 6, 15)) == date(2025, 6, 8)
+
 
 class TestWeekdayReferences:
     def test_next_tuesday(self) -> None:
