@@ -243,6 +243,45 @@ def _parse_relative(s: str, today: date) -> date | None:
         unit = m.group(2).rstrip("s")
         return _apply_offset(today, n, unit, "after")
 
+    # "a day ago" / "an hour ago" (only date units for "a")
+    m = re.match(r"a\s+(day|week|month|year)\s+ago", s)
+    if m:
+        unit = m.group(1)
+        return _apply_offset(today, 1, unit, "before")
+
+    # "3 days ago" / "2 weeks ago" / "1 month ago"
+    m = re.match(r"(\d+)\s+(day|days|week|weeks|month|months|year|years)\s+ago", s)
+    if m:
+        n = int(m.group(1))
+        unit = m.group(2).rstrip("s")
+        return _apply_offset(today, n, unit, "before")
+
+    # "a day earlier" / "a month later"
+    m = re.match(r"a\s+(day|week|month|year)\s+(earlier|later)", s)
+    if m:
+        unit = m.group(1)
+        direction = "before" if m.group(2) == "earlier" else "after"
+        return _apply_offset(today, 1, unit, direction)
+
+    # "3 days earlier" / "2 weeks later"
+    m = re.match(
+        r"(\d+)\s+(day|days|week|weeks|month|months|year|years)\s+(earlier|later)", s
+    )
+    if m:
+        n = int(m.group(1))
+        unit = m.group(2).rstrip("s")
+        direction = "before" if m.group(3) == "earlier" else "after"
+        return _apply_offset(today, n, unit, direction)
+
+    # "a day back" / "3 days back"
+    m = re.match(
+        r"(?:a|(\d+))\s+(day|days|week|weeks|month|months|year|years)\s+back", s
+    )
+    if m:
+        n = 1 if m.group(1) is None else int(m.group(1))
+        unit = m.group(2).rstrip("s")
+        return _apply_offset(today, n, unit, "before")
+
     return None
 
 
