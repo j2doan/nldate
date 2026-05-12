@@ -41,6 +41,47 @@ _MONTHS: dict[str, int] = {
 
 _WEEK_UNITS = ("week", "weeks", "day", "days", "month", "months", "year", "years")
 
+_WORD_NUM: dict[str, int] = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50,
+    "sixty": 60,
+    "seventy": 70,
+    "eighty": 80,
+    "ninety": 90,
+}
+
+_WORD_PAT = "(?:" + "|".join(_WORD_NUM) + ")"
+
+
+def _to_int(s: str) -> int:
+    s = s.strip().lower()
+    if s in _WORD_NUM:
+        return _WORD_NUM[s]
+    if s == "a":
+        return 1
+    return int(s)
+
 
 def _add_months(d: date, months: int) -> date:
     total = d.month - 1 + months
@@ -221,10 +262,12 @@ def _parse_relative(s: str, today: date) -> date | None:
         if unit == "year":
             return _add_months(today, 12)
 
-    # "in 3 days" / "in 2 weeks" / "in 1 month"
-    m = re.match(r"in\s+(\d+)\s+(day|days|week|weeks|month|months|year|years)", s)
+    # "in 3 days" / "in 2 weeks" / "in one month"
+    m = re.match(
+        rf"in\s+({_WORD_PAT}|\d+)\s+(day|days|week|weeks|month|months|year|years)", s
+    )
     if m:
-        n = int(m.group(1))
+        n = _to_int(m.group(1))
         unit = m.group(2).rstrip("s")
         return _apply_offset(today, n, unit, "after")
 
@@ -234,12 +277,13 @@ def _parse_relative(s: str, today: date) -> date | None:
         unit = m.group(1)
         return _apply_offset(today, 1, unit, "after")
 
-    # "3 days from now" / "2 weeks from today"
+    # "3 days from now" / "two weeks from today"
     m = re.match(
-        r"(\d+)\s+(day|days|week|weeks|month|months|year|years)\s+from\s+(now|today)", s
+        rf"({_WORD_PAT}|\d+)\s+(day|days|week|weeks|month|months|year|years)\s+from\s+(now|today)",
+        s,
     )
     if m:
-        n = int(m.group(1))
+        n = _to_int(m.group(1))
         unit = m.group(2).rstrip("s")
         return _apply_offset(today, n, unit, "after")
 
@@ -249,10 +293,12 @@ def _parse_relative(s: str, today: date) -> date | None:
         unit = m.group(1)
         return _apply_offset(today, 1, unit, "before")
 
-    # "3 days ago" / "2 weeks ago" / "1 month ago"
-    m = re.match(r"(\d+)\s+(day|days|week|weeks|month|months|year|years)\s+ago", s)
+    # "3 days ago" / "two weeks ago" / "1 month ago"
+    m = re.match(
+        rf"({_WORD_PAT}|\d+)\s+(day|days|week|weeks|month|months|year|years)\s+ago", s
+    )
     if m:
-        n = int(m.group(1))
+        n = _to_int(m.group(1))
         unit = m.group(2).rstrip("s")
         return _apply_offset(today, n, unit, "before")
 
@@ -263,22 +309,24 @@ def _parse_relative(s: str, today: date) -> date | None:
         direction = "before" if m.group(2) == "earlier" else "after"
         return _apply_offset(today, 1, unit, direction)
 
-    # "3 days earlier" / "2 weeks later"
+    # "3 days earlier" / "two weeks later"
     m = re.match(
-        r"(\d+)\s+(day|days|week|weeks|month|months|year|years)\s+(earlier|later)", s
+        rf"({_WORD_PAT}|\d+)\s+(day|days|week|weeks|month|months|year|years)\s+(earlier|later)",
+        s,
     )
     if m:
-        n = int(m.group(1))
+        n = _to_int(m.group(1))
         unit = m.group(2).rstrip("s")
         direction = "before" if m.group(3) == "earlier" else "after"
         return _apply_offset(today, n, unit, direction)
 
-    # "a day back" / "3 days back"
+    # "a day back" / "three days back"
     m = re.match(
-        r"(?:a|(\d+))\s+(day|days|week|weeks|month|months|year|years)\s+back", s
+        rf"(a|{_WORD_PAT}|\d+)\s+(day|days|week|weeks|month|months|year|years)\s+back",
+        s,
     )
     if m:
-        n = 1 if m.group(1) is None else int(m.group(1))
+        n = _to_int(m.group(1))
         unit = m.group(2).rstrip("s")
         return _apply_offset(today, n, unit, "before")
 
@@ -304,14 +352,14 @@ def _resolve_date(s: str, today: date) -> date:
         ref_text = m.group(3).strip()
 
         components = re.findall(
-            r"(\d+|a)\s+(day|days|week|weeks|month|months|year|years)",
+            rf"(a|{_WORD_PAT}|\d+)\s+(day|days|week|weeks|month|months|year|years)",
             offset_text,
             re.IGNORECASE,
         )
         if components:
             ref = _resolve_date(ref_text, today)
             for n_str, unit in components:
-                n = 1 if n_str.lower() == "a" else int(n_str)
+                n = _to_int(n_str)
                 unit_s = unit.rstrip("s")
                 ref = _apply_offset(ref, n, unit_s, direction)
             return ref

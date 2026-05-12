@@ -155,6 +155,24 @@ class TestRelativeDates:
     def test_a_week_back(self) -> None:
         assert parse("a week back", date(2025, 6, 15)) == date(2025, 6, 8)
 
+    def test_word_days_ago(self) -> None:
+        assert parse("two weeks ago", date(2025, 6, 15)) == date(2025, 6, 1)
+
+    def test_word_in_days(self) -> None:
+        assert parse("in five days", date(2025, 6, 15)) == date(2025, 6, 20)
+
+    def test_word_from_now(self) -> None:
+        assert parse("ten days from now", date(2025, 6, 15)) == date(2025, 6, 25)
+
+    def test_word_days_back(self) -> None:
+        assert parse("four days back", date(2025, 6, 15)) == date(2025, 6, 11)
+
+    def test_word_day_earlier(self) -> None:
+        assert parse("one month later", date(2025, 6, 15)) == date(2025, 7, 15)
+
+    def test_word_in_one_month(self) -> None:
+        assert parse("in one month", date(2025, 6, 15)) == date(2025, 7, 15)
+
 
 class TestWeekdayReferences:
     def test_next_tuesday(self) -> None:
@@ -219,6 +237,14 @@ class TestOffsetExpressions:
         assert parse("2 days before the day after tomorrow", date(2025, 6, 15)) == date(
             2025, 6, 15
         )
+
+    def test_word_offset_before(self) -> None:
+        assert parse("three days before December 1st, 2025") == date(2025, 11, 28)
+
+    def test_word_compound_offset(self) -> None:
+        assert parse(
+            "one year and two months after yesterday", date(2025, 6, 15)
+        ) == date(2026, 8, 14)
 
 
 class TestEdgeCases:
