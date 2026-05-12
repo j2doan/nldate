@@ -1,12 +1,10 @@
 [project]
 name = "nldate"
 version = "0.1.0"
-description = "Add your description here"
+description = "Natural language date parser"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "numpy>=2.4.4",
-]
+dependencies = []
 
 [dependency-groups]
 dev = [
@@ -15,3 +13,10 @@ dev = [
     "pytest>=9.0.3",
     "ruff>=0.15.12",
 ]
+
+[tool.mypy]
+strict = true
+disallow_untyped_defs = true
+
+[tool.ruff]
+target-version = "py312"
